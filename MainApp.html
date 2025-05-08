@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FlickGate</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&family=Amiri:wght@400;700&family=Noto+Kufi+Arabic:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        html {
+            scrollbar-width: thin; /* جعل شريط التمرير رقيقًا */
+            scrollbar-color: #353535 #000000; /* اللون المتحرك ولون الخلفية */
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: -250px;
+            width: 250px;
+            height: 100%;
+            background-color: #131313;
+            transition: left 0.3s ease;
+            z-index: 1000;
+            padding: 20px;
+        }
+        .sidebar.open {
+            left: 0;
+        }
+        .sidebar h2 {
+            font-size: 1.6rem;
+            color: white;
+            text-align: left;
+        }
+        .sidebar .section-title {
+            font-size: 0.8rem;
+            color: #5a5a5a;
+            margin-top: 20px;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+        }
+        .sidebar hr {
+            border-color: #333;
+            margin: 15px 0;
+        }
+        .sidebar ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        .sidebar ul li {
+            margin-bottom: 10px;
+        }
+        .sidebar ul li a {
+            color: rgb(116, 116, 116);
+            text-decoration: none;
+            font-size: 1.1rem;
+            display: block;
+            transition: color 0.3s;
+        }
+        .sidebar ul li a:hover {
+            color: #cccccc;
+        }
+    
+        /* Dropdown */
+        .dropdown {
+            position: relative;
+            display: inline-block;
+            z-index: 10000;
+        }
+    
+        /* Dropdown content */
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: #333;
+            min-width: 160px;
+            border-radius: 10px;
+            box-shadow: 0px 8px 16px rgba(0,0,0,0.2);
+            z-index: 10000;
+            right: 0;
+            margin-top: 5px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+    
+        /* Show dropdown on hover */
+        .dropdown:hover .dropdown-content {
+            display: block;
+            opacity: 1;
+            z-index: 10000;
+        }
+    
+        /* Show dropdown when it's clicked (hover will show initially) */
+        .dropdown.show .dropdown-content {
+            display: block;
+            opacity: 1;
+            z-index: 10000;
+        }
+    
+        /* Dropdown items */
+        .dropdown-content a {
+            padding: 8px 16px;
+            color: white;
+            text-decoration: none;
+            text-align: right;
+            display: block;
+            z-index: 10000;
+        }
+    
+        /* Hover effect for dropdown items */
+        .dropdown-content a:hover {
+            background-color: #575757;
+            z-index: 10000;
+        }
+    
+        /* تنسيق الحاوية للصورة */
+        .movie-image-container {
+            position: relative;
+            width: 100%; /* عرض الحاوية */
+            height: 500px; /* زيادة ارتفاع الحاوية */
+            overflow: hidden;
+            border-radius: 10px; /* الزوايا المدورة */
+            margin: 50px auto; /* لتوسيع الصورة */
+        }
+    
+        /* تنسيق الصورة لتملأ الحاوية */
+        .movie-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* تجعل الصورة تملأ الحاوية بالكامل مع الحفاظ على التناسب */
+            object-position: center; /* مركز الصورة داخل الحاوية */
+        }
+    
+        /* تنسيق العناصر فوق الصورة */
+        .movie-overlay {
+            position: absolute;
+            top: 50%; /* رفع المحتوى إلى منتصف الصورة */
+            left: 0;
+            right: 0;
+            transform: translateY(-50%); /* محاذاة النص إلى منتصف الصورة عموديًا */
+            color: white;
+            padding: 20px;
+            text-align: left;
+            z-index: 20;
+        }
+        .gradient-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 100%; /* تغطية الصورة بالكامل */
+    background: linear-gradient(to top, rgb(0, 0, 0), rgba(0, 0, 0, 0)); /* تأثير التلاشي */
+    z-index: 10; /* تأكد من أن الطبقة فوق الصورة */
+}
+
+        .title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            z-index: 20;
+        }
+    
+        .year, .rating, .description {
+            font-size: 1.2rem;
+            z-index: 20;
+        }
+    
+/* تنسيق زر التشغيل */
+.play-button {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    background-color: #8b0000;
+    color: white;
+    border: none;
+    padding: 15px; /* يمكنك تعديل القيمة حسب الحاجة */
+    border-radius: 50%; /* يجعل الزر دائريًا */
+    cursor: pointer;
+    transition: background-color 0.3s;
+    z-index: 11; /* تأكد من أن الزر فوق الصورة */
+    display: flex; /* استخدام flex لجعل الأيقونة في الوسط */
+    align-items: center; /* محاذاة عموديًا */
+    justify-content: center; /* محاذاة أفقيًا */
+    width: 60px; /* عرض ثابت للزر */
+    height: 60px; /* ارتفاع ثابت للزر */
+}
+
+/* تنسيق الأيقونة داخل الزر */
+.play-button i {
+    font-size: 24px; /* زيادة حجم الأيقونة */
+}
+    
+        .play-button:hover {
+            background-color: #b51f1f;
+        }
+    
+/* تنسيق معلومات الفيلم */
+.movie-info-left {
+    position: absolute;
+    top: 50%;
+    left: 10px;
+    transform: translateY(-50%);
+    color: white;
+    padding-left: 20px;
+    z-index: 20;
+}
+
+/* تنسيق العنوان */
+.movie-info-left .title {
+    font-size: 3rem;
+    font-weight: bold;
+    margin-bottom: 10px; /* مسافة بين العنوان والعناصر التالية */
+}
+
+/* تنسيق السنة والتقييم والوصف */
+.movie-info-left .year,
+.movie-info-left .rating,
+.movie-info-left .description {
+    font-size: 1.2rem;
+    margin-bottom: 8px; /* مسافة بين العناصر */
+}
+
+/* تنسيق النجوم في التقييم */
+.movie-info-left .rating i {
+    color: #FFD700; /* تغيير اللون إلى الذهبي */
+}
+
+.movie-info-left .description {
+    text-align: right;
+    direction: rtl;
+    max-width: 900px; /* العرض الأقصى */
+    width: 100%; /* يجعل العنصر يتكيف مع الشاشة */
+    margin: 0 auto; /* توسيط العنصر إذا كان العرض أقل من max-width */
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.651); /* ظل خفيف للنص */
+}
+@media (max-width: 768px) {
+    .movie-info-left .description {
+        max-width: 90%; /* تصغير العرض للشاشات الصغيرة */
+    }
+}
+
+@media (max-width: 480px) {
+    .movie-info-left .description {
+        max-width: 100%; /* يجعل العرض كاملًا على الشاشات الصغيرة جدًا */
+    }
+}
+
+    
+        /* حاوية الأفلام بحيث يمكن التمرير أفقيًا */
+        .movies {
+            display: flex;
+            overflow-x: auto; /* التمرير أفقي */
+            gap: 20px; /* المسافة بين الأفلام */
+            padding: 10px 0;
+            scrollbar-width: thin; /* جعل شريط التمرير رقيقًا */
+            scrollbar-color: #3a3a3a #000000; /* اللون المتحرك ولون الخلفية */
+            position: relative; /* لتحديد موقع الأزرار */
+        }
+    
+        /* كل عنصر فيلم */
+        .movie {
+            flex-shrink: 0; /* لضمان أن كل فيلم يبقى بنفس الحجم */
+            width: 150px; /* عرض ثابت للصورة */
+            position: relative; /* لتثبيت العنوان فوق الصورة */
+        }
+    
+/* العنوان فوق الصورة */
+.movie h4 {
+    position: absolute;
+    bottom: 5px; /* نقل العنوان نحو الأسفل ليظهر فوق الحافة السفلية */
+    left: 50%;
+    transform: translateX(-50%); /* لضبط العنوان في منتصف الصورة */
+    color: white; /* لون العنوان */
+    font-weight: bold;
+    padding: 5px;
+    width: 90%; /* جعل العنوان يمتد تقريبًا بعرض الصورة */
+    max-width: 95%; /* الحد الأقصى للعرض */
+    text-align: center;
+    font-size: 14px; /* تعديل حجم الخط إذا لزم الأمر */
+    z-index: 2; /* لضمان ظهور العنوان فوق الصورة */
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.9); /* ظل خفيف للنص */
+    
+    /* التعامل مع النص الطويل */
+    white-space: nowrap; /* منع النص من الانتقال إلى سطر جديد */
+    overflow: hidden; /* إخفاء أي نص زائد */
+    text-overflow: ellipsis; /* إضافة "..." عند تجاوز النص الحد */
+}
+    
+        /* تنسيق الصورة */
+        .movie img {
+            width: 100%; /* لضبط عرض الصورة داخل الحاوية */
+            height: 100%; /* ارتفاع ثابت للصورة */
+            object-fit: cover; /* لضبط الصورة بحيث تملأ الحاوية بشكل مناسب */
+            border-radius: 10px; /* حواف مستديرة */
+            z-index: 1; /* لضمان أن الصورة تظهر أسفل العنوان */
+        }
+    
+        /* إضافة مسافة واضحة بين الأقسام */
+        .category {
+            margin-bottom: 40px; /* مسافة بين كل قسم والآخر */
+            padding-bottom: 20px; /* مسافة إضافية داخل كل قسم */
+            position: relative;
+        }
+    
+        /* محاذاة العناوين إلى الجهة اليمنى */
+        .category h3 {
+            text-align: right; /* جعل العنوان على اليمين */
+            font-size: 24px;
+            font-weight: 700;
+            padding: 20px;
+            margin-bottom: 15px; /* إضافة مسافة بين العنوان والمحتوى */
+        }
+    
+        /* تخصيص شريط التمرير في Firefox */
+        .movies::-webkit-scrollbar {
+            height: 8px; /* ارتفاع شريط التمرير */
+        }
+    
+        .movies::-webkit-scrollbar-track {
+            background: #000000; /* لون الخلفية لشريط التمرير */
+            border-radius: 10px; /* زوايا مستديرة */
+        }
+    
+        .movies::-webkit-scrollbar-thumb {
+            background: #353535; /* اللون المتحرك */
+            border-radius: 10px; /* زوايا مستديرة */
+        }
+    
+        /* تنسيق الأزرار */
+        .scroll-button {
+            background-color: #242424; /* لون الخلفية */
+            color: white; /* لون النص */
+            font-size: 24px; /* حجم الخط (زيادة الحجم) */
+            border: none; /* إزالة الحدود */
+            border-radius: 5px; /* زوايا مستديرة */
+            padding: 10px; /* مساحة داخلية */
+            cursor: pointer; /* تغيير المؤشر عند التمرير فوق الزر */
+            position: absolute; /* لجعل الأزرار في موقع محدد */
+            top: 50%; /* محاذاة الأزرار في منتصف القسم */
+            transform: translateY(-50%); /* لضبط الأزرار عموديًا */
+            z-index: 1; /* التأكد من أن الأزرار فوق قسم التمرير */
+        }
+    
+        .scroll-button.left {
+            left: 10px; /* المسافة من اليسار */
+        }
+    
+        .scroll-button.right {
+            right: 10px; /* المسافة من اليمين */
+        }
+        .scroll-button:hover{
+            background-color:#5a5a5a;
+        }
+        input {
+    border: 1px solid rgba(186, 186, 186, 0.5); /* حد ثابت بلون رمادي فاتح */
+}
+
+input:focus {
+    outline: none; /* منع الحدود البيضاء عند التركيز */
+}
+/* خط العناوين */
+#headerelements {
+    font-family: 'Tajawal', sans-serif;
+    font-weight: 700;
+}
+/* خط القوائم المنسدلة والعناصر الفرعية */
+.dropdown a, .dropdown-content a {
+    font-family: 'Noto Kufi Arabic', sans-serif;
+    font-weight: 400;
+}
+.category h3{
+    font-family: 'Tajawal', sans-serif;
+    font-weight: 700;
+}
+    </style>
+        </head>
+<body class="bg-black text-white">
+    <!-- Sidebar -->
+    <div id="sidebar" class="sidebar">
+        <div class="p-4 text-center">
+            <!-- Logo -->
+            <img alt="FlickGate Logo" src="https://raw.githubusercontent.com/FlickGate/TheAppFG/refs/heads/main/logo.png" class="h-8 mb-2" />
+            <!-- Site Name in Header -->
+            <h2 class="text-white text-xl">FlickGate</h2>
+        </div>
+        <hr>
+
+        <!-- My Library Section -->
+        <div class="section-title">My Library</div>
+        <ul>
+            <li>
+                <a href="MyLibrary/WatchList/Watchlist.html" class="flex items-center">
+                    <i class="fas fa-plus mr-2"></i>
+                    Watchlist
+                </a>
+            </li>
+            <li>
+                <a href="MyLibrary/TonightMovie/tonightmovie.html" class="flex items-center">
+                    <i class="fas fa-film mr-2"></i>
+                    Tonight Movie
+                </a>
+            </li>
+            <li>
+                <a href="MyLibrary/TopRated/toprated.html" class="flex items-center">
+                    <i class="fas fa-star mr-2"></i>
+                    Top Rated
+                </a>
+            </li>
+        </ul>
+        <hr>
+        <!-- General Section -->
+        <div class="section-title">General</div>
+        <ul>
+            <li>
+                <a href="MyLibrary/InquiryAndAds/InquiryAndAds.html" class="flex items-center">
+                    <i class="fas fa-question-circle mr-2"></i>
+                    Inquiry & Ads
+                </a>
+            </li>
+            <li>
+                <a href="MyLibrary/BuyMeCoffee/BuyMeCoffee.html" class="flex items-center">
+                    <i class="fas fa-coffee mr-2"></i>
+                    Buy Me A Coffee
+                </a>
+            </li>
+            <li>
+                <a href="MyLibrary/notifications/notifications.html" class="flex items-center">
+                    <i class="fas fa-bell mr-2"></i>
+                    Notifications
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Navbar -->
+    <nav class="flex items-center justify-between p-4">
+        <div class="flex items-center space-x-2">
+            <div class="cursor-pointer" onclick="toggleSidebar()">
+                <div class="w-6 h-1 bg-gray-300 mb-1"></div>
+                <div class="w-6 h-1 bg-gray-300 mb-1"></div>
+                <div class="w-6 h-1 bg-gray-300"></div>
+            </div>
+        </div>
+        <div class="flex-grow mx-4 flex justify-center">
+            <div class="relative w-1/2 max-w-xs">
+                <input id="searchInput" type="text" class="w-full p-2 pl-10 pr-10 bg-[#131313] text-white rounded-full placeholder-[#707070]" placeholder="Search">
+                <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-[#707070] cursor-pointer" id="searchButton"></i>
+                <i class="fas fa-times absolute right-3 top-1/2 transform -translate-y-1/2 text-[#707070] cursor-pointer" id="clearButton"></i>
+            </div>
+        </div>
+        
+            <div class="flex space-x-4">
+                            <!-- Sports Dropdown -->
+            <div class="dropdown">
+                <a href="#" id="headerelements">رياضة</a>
+                <div class="dropdown-content">
+                    <a href="sportsfolder/Matches.html">ماتش</a>
+                </div>
+            </div>
+
+            <a href="Movies/Movies.html" id="headerelements">أفلام</a>
+            <!-- Anime Dropdown -->
+            <div class="dropdown">
+                <a href="#" id="headerelements">أنمي</a>
+                <div class="dropdown-content">
+                    <a href="AnimeFolder/TheSeriesAnime/AnimeSeries.html">مسلسلات انمي</a>
+                    <a href="AnimeFolder/TheFilmsAnime/AnimeFilms.html">افلام انمي</a>
+                </div>
+            </div>
+            <!-- Series Dropdown -->
+            <div class="dropdown">
+                <a href="#" id="headerelements">مسلسلات</a>
+                <div class="dropdown-content">
+                    <a href="ArabicFolder/ArSeries.html">مسلسلات عربية</a>
+                    <a href="SeriesFFolder/AllSeries.html">مسلسلات اجنبية</a>
+                    <a href="TurkishFolder/TrSeries.html">مسلسلات تركية</a>
+                    <a href="KdramaFolder/KdSeries.html">مسلسلات كيدراما</a>
+                    <a href="IndianFolder/InSeries.html">مسلسلات هندية</a>
+                    <a href="RamadanFolder/RaSeries.html">مسلسلات رمضانية</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+    <hr style="border-color: #333; margin: 15px 0;">
+
+    <!-- Tonight Movie -->
+    <div id="movie-info" class="movie-info">
+        <!-- سيتم تحميل صورة الفيلم وبياناته هنا -->
+    </div>
+    
+    <div class="main-content-sections">
+        <!-- قسم Trend Now Movies-->
+        <div class="category">
+            <h3>أفلام ترند</h3>
+            <div class="scroll-container">
+                <button class="scroll-button left" onclick="scrollLeft('trend-movies')">←</button>
+                <div id="trend-movies" class="movies">
+                    <!-- العناصر هنا سيتم إضافتها عبر JS -->
+                </div>
+                <button class="scroll-button right" onclick="scrollRight('trend-movies')">→</button>
+            </div>
+        </div>
+        <hr style="border-color: #333; margin: 15px 0;">
+    
+        <!-- قسم Top Rated -->
+        <div class="category">
+            <h3>تقييم عالي</h3>
+            <div class="scroll-container">
+                <button class="scroll-button left" onclick="scrollLeft('top-rated')">←</button>
+                <div id="top-rated" class="movies">
+                    <!-- العناصر هنا سيتم إضافتها عبر JS -->
+                </div>
+                <button class="scroll-button right" onclick="scrollRight('top-rated')">→</button>
+            </div>
+        </div>
+        <hr style="border-color: #333; margin: 15px 0;">
+    
+        <!-- قسم Trend Series -->
+        <div class="category">
+            <h3>مسلسلات ترند</h3>
+            <div class="scroll-container">
+                <button class="scroll-button left" onclick="scrollLeft('trend-series')">←</button>
+                <div id="trend-series" class="movies">
+                    <!-- العناصر هنا سيتم إضافتها عبر JS -->
+                </div>
+                <button class="scroll-button right" onclick="scrollRight('trend-series')">→</button>
+            </div>
+        </div>
+        <hr style="border-color: #333; margin: 15px 0;">
+    
+        <!-- قسم Trend Ramadan Series -->
+        <div class="category">
+            <h3>مسلسلات رمضانية ترند</h3>
+            <div class="scroll-container">
+                <button class="scroll-button left" onclick="scrollLeft('Ramadan-series')">←</button>
+                <div id="Ramadan-series" class="movies">
+                    <!-- العناصر هنا سيتم إضافتها عبر JS -->
+                </div>
+                <button class="scroll-button right" onclick="scrollRight('Ramadan-series')">→</button>
+            </div>
+        </div>
+    </div>
+        
+    <script>
+function toggleSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    sidebar.classList.toggle('open');
+}
+
+// إضافة حدث للنقر على المستند
+document.addEventListener('click', function(event) {
+    const sidebar = document.getElementById('sidebar');
+    const toggleButton = document.querySelector('.cursor-pointer');
+
+    // تحقق مما إذا كان النقر خارج السايد بار وزر التبديل
+    if (!sidebar.contains(event.target) && !toggleButton.contains(event.target)) {
+        sidebar.classList.remove('open');
+    }
+});
+
+        // Add event listeners to maintain dropdown open for 2 seconds on hover
+        document.querySelectorAll('.dropdown').forEach(dropdown => {
+            let timer;
+
+            dropdown.addEventListener('mouseover', () => {
+                clearTimeout(timer); // Clear any existing timers
+                dropdown.classList.add('show'); // Show the dropdown immediately
+            });
+
+            dropdown.addEventListener('mouseleave', () => {
+                timer = setTimeout(() => {
+                    dropdown.classList.remove('show'); // Hide the dropdown after 1 seconds
+                }, 300);
+            });
+        });
+    </script>
+<script>
+        // Fetch movie data and display it
+        async function fetchMovieData() {
+            try {
+                const response = await fetch('https://raw.githubusercontent.com/FlickGate/TheAppFG/refs/heads/main/TonightMovie');
+                const movie = await response.json();
+                const movieInfoDiv = document.getElementById('movie-info');
+
+                function generateStars(rating) {
+                    let stars = '';
+                    const fullStars = Math.floor(rating);
+                    const halfStar = rating % 1 >= 0.5 ? 1 : 0;
+                    const emptyStars = 5 - fullStars - halfStar;
+
+                    for (let i = 0; i < fullStars; i++) {
+                        stars += '<i class="fas fa-star"></i>';
+                    }
+                    if (halfStar) stars += '<i class="fas fa-star-half-alt"></i>';
+                    for (let i = 0; i < emptyStars; i++) {
+                        stars += '<i class="far fa-star"></i>';
+                    }
+
+                    return stars;
+                }
+
+                function loadImage(imageElement, imageUrl) {
+                    const observer = new IntersectionObserver((entries, observer) => {
+                        entries.forEach(entry => {
+                            if (entry.isIntersecting) {
+                                imageElement.src = imageUrl;
+                                observer.unobserve(imageElement);
+                            }
+                        });
+                    });
+                    observer.observe(imageElement);
+                }
+
+                if (movie && movie.image_url && movie.title && movie.description && movie.year && movie.rating) {
+                    movieInfoDiv.innerHTML = `
+                        <div class="movie-details">
+                            <div class="movie-image-container">
+                                <img data-src="${movie.image_url}" alt="${movie.title}" class="movie-image lazy-load" />
+                                        <div class="gradient-overlay"></div> <!-- إضافة العنصر المتدرج -->
+                                <div class="movie-info-left">
+                                    <div class="title">${movie.title}</div>
+                                    <div class="year">${movie.year}</div>
+                                    <div class="rating">${generateStars(movie.rating)}</div>
+                                    <div class="description">${movie.description}</div>
+                                </div>
+
+                                <button class="play-button" onclick="window.location.href='MyLibrary/TonightMovie/tonightmovie.html';">
+                                    <i class="fas fa-play"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    const movieImage = document.querySelector('.movie-image.lazy-load');
+                    loadImage(movieImage, movie.image_url);
+                } else {
+                    movieInfoDiv.innerHTML = '<p>No movie available for tonight.</p>';
+                }
+            } catch (error) {
+                console.error("Error fetching movie data:", error);
+                document.getElementById('movie-info').innerHTML = '<p>Error loading movie data. Please try again later.</p>';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', fetchMovieData);
+</script>
+    <script>
+        const trendMoviesContainer = document.getElementById('trend-movies');
+
+fetch('https://raw.githubusercontent.com/FlickGate/TheAppFG/refs/heads/main/Movies')
+    .then(response => response.json())
+    .then(data => {
+        const trendMovies = data.filter(movie => movie.TrendNow === "True");
+        trendMovies.forEach(movie => {
+            const movieElement = document.createElement('div');
+            movieElement.classList.add('movie');
+            
+            const image = document.createElement('img');
+            image.src = movie.image_url;
+            image.alt = movie.title;
+
+            const title = document.createElement('h4');
+            title.textContent = movie.title;
+
+            const movieLink = document.createElement('a');
+            movieLink.href = `http://127.0.0.1:5500/Movies/MovieWatch.html?title=${encodeURIComponent(movie.title)}&description=${encodeURIComponent(movie.description)}&video_url=${encodeURIComponent(movie.video_url)}&image_url=${encodeURIComponent(movie.image_url)}`;
+            movieLink.appendChild(image);
+            movieLink.appendChild(title);
+
+            movieElement.appendChild(movieLink);
+            trendMoviesContainer.appendChild(movieElement);
+        });
+    })
+    .catch(error => console.error('Error loading trend movies:', error));
+    </script>
+    <script>
+        const topRatedContainer = document.getElementById('top-rated');
+
+fetch('https://raw.githubusercontent.com/FlickGate/TheAppFG/refs/heads/main/Movies')
+    .then(response => response.json())
+    .then(data => {
+        const topRatedMovies = data.filter(movie => parseFloat(movie.rating) >= 8.5);
+        topRatedMovies.forEach(movie => {
+            const movieElement = document.createElement('div');
+            movieElement.classList.add('movie');
+            
+            const image = document.createElement('img');
+            image.src = movie.image_url;
+            image.alt = movie.title;
+
+            const title = document.createElement('h4');
+            title.textContent = movie.title;
+
+            const movieLink = document.createElement('a');
+            movieLink.href = `http://127.0.0.1:5500/Movies/MovieWatch.html?title=${encodeURIComponent(movie.title)}&description=${encodeURIComponent(movie.description)}&video_url=${encodeURIComponent(movie.video_url)}&image_url=${encodeURIComponent(movie.image_url)}`;
+            movieLink.appendChild(image);
+            movieLink.appendChild(title);
+
+            movieElement.appendChild(movieLink);
+            topRatedContainer.appendChild(movieElement);
+        });
+    })
+    .catch(error => console.error('Error loading top rated movies:', error));
+    </script>
+
+<script>
+    const ramadanSeriesContainer = document.getElementById('Ramadan-series');
+
+    // الرابط الخاص بمسلسلات رمضان
+    const ramadanSeriesUrl = 'https://raw.githubusercontent.com/FlickGate/TheAppFG/refs/heads/main/RamadanSeries';
+
+    fetch(ramadanSeriesUrl)
+        .then(response => response.json())
+        .then(data => {
+            data.categories.forEach(category => {
+                category.series.forEach(series => {
+                    const seriesElement = document.createElement('div');
+                    seriesElement.classList.add('movie');
+
+                    const image = document.createElement('img');
+                    image.src = series.image_url;
+                    image.alt = series.title;
+
+                    const title = document.createElement('h4');
+                    title.textContent = series.title;
+
+                    const seriesLink = document.createElement('a');
+                    seriesLink.href = `http://127.0.0.1:5500/RamadanFolder/RaSeasons.html?title=${encodeURIComponent(series.title)}&description=${encodeURIComponent(series.description)}&video_url=${encodeURIComponent(series.video_url)}&image_url=${encodeURIComponent(series.image_url)}`;
+                    seriesLink.appendChild(image);
+                    seriesLink.appendChild(title);
+
+                    seriesElement.appendChild(seriesLink);
+                    ramadanSeriesContainer.appendChild(seriesElement);
+                });
+            });
+        })
+        .catch(error => console.error('Error loading Ramadan series:', error));
+</script>
+
+    <script>
+        const trendSeriesContainer = document.getElementById('trend-series');
+
+const seriesUrls = [
+    { url: 'https://raw.githubusercontent.com/FlickGate/TheAppFG/refs/heads/main/Series', folder: 'SeriesFFolder', file: 'Seasons.html' },
+    { url: 'https://raw.githubusercontent.com/FlickGate/TheAppFG/refs/heads/main/TurkishSeries', folder: 'TurkishFolder', file: 'TrSeasons.html' },
+    { url: 'https://raw.githubusercontent.com/FlickGate/TheAppFG/refs/heads/main/IndianSeries', folder: 'IndianFolder', file: 'InSeasons.html' },
+    { url: 'https://raw.githubusercontent.com/FlickGate/TheAppFG/refs/heads/main/KdramaSeries', folder: 'KdramaFolder', file: 'KdSeasons.html' }
+];
+
+Promise.all(seriesUrls.map(item => fetch(item.url).then(response => response.json())))
+    .then(seriesData => {
+        seriesData.forEach((data, index) => {
+            const trendNowSeries = data.categories.filter(category => category.TrendNowSeries === "True");
+            trendNowSeries.forEach(category => {
+                category.series.forEach(series => {
+                    const seriesElement = document.createElement('div');
+                    seriesElement.classList.add('movie');
+                    
+                    const image = document.createElement('img');
+                    image.src = series.image_url;
+                    image.alt = series.title;
+                    
+                    const title = document.createElement('h4');
+                    title.textContent = series.title;
+                    
+                    const seriesLink = document.createElement('a');
+                    const folder = seriesUrls[index].folder;
+                    const file = seriesUrls[index].file;
+                    seriesLink.href = `http://127.0.0.1:5500/${folder}/${file}?title=${encodeURIComponent(series.title)}&description=${encodeURIComponent(series.description)}&video_url=${encodeURIComponent(series.video_url)}&image_url=${encodeURIComponent(series.image_url)}`;
+                    seriesLink.appendChild(image);
+                    seriesLink.appendChild(title);
+                    
+                    seriesElement.appendChild(seriesLink);
+                    trendSeriesContainer.appendChild(seriesElement);
+                });
+            });
+        });
+    })
+    .catch(error => console.error('Error loading trend series:', error));
+    </script>
+
+
+<script>
+    function searchMovie() {
+      const query = document.getElementById('searchInput').value.trim();
+      if (!query) {
+        alert('يرجى إدخال كلمة البحث.');
+        return;
+      }
+      window.location.href = 'ShowSearch.html?query=' + encodeURIComponent(query);
+    }
+  
+    document.getElementById('searchInput').addEventListener('keydown', function(event) {
+      if (event.key === 'Enter') {
+        searchMovie();
+      }
+    });
+  
+    document.getElementById('searchButton').addEventListener('click', function() {
+      searchMovie();
+    });
+  
+    document.getElementById('clearButton').addEventListener('click', function() {
+      document.getElementById('searchInput').value = '';
+    });
+  </script>
+  <script>
+  function scrollLeft(containerId) {
+    const container = document.getElementById(containerId);
+    container.scrollBy({
+        top: 0,
+        left: -300, // عدد البيكسلات التي تريد تمريرها إلى اليسار
+        behavior: 'smooth' // تأثير التمرير السلس
+    });
+}
+
+function scrollRight(containerId) {
+    const container = document.getElementById(containerId);
+    container.scrollBy({
+        top: 0,
+        left: 300, // عدد البيكسلات التي تريد تمريرها إلى اليمين
+        behavior: 'smooth' // تأثير التمرير السلس
+    });
+}
+</script>
+<script>
+    async function fetchLatestNotification() {
+        try {
+            const response = await fetch('https://raw.githubusercontent.com/FlickGate/TheAppFG/refs/heads/main/Notifications');
+            const data = await response.json();
+
+            if (data.length > 0) {
+                const lastNotification = Object.values(data[data.length - 1])[0]; // الحصول على آخر إشعار
+                
+                showNotificationPopup(lastNotification);
+            }
+        } catch (error) {
+            console.error('Error fetching notifications:', error);
+        }
+    }
+
+    function showNotificationPopup(message) {
+        let notificationBox = document.createElement("div");
+        notificationBox.id = "notificationPopup";
+        notificationBox.style.position = "fixed";
+        notificationBox.style.bottom = "20px";
+        notificationBox.style.right = "20px";
+        notificationBox.style.background = "#333";
+        notificationBox.style.color = "#fff";
+        notificationBox.style.padding = "15px 20px";
+        notificationBox.style.borderRadius = "10px";
+        notificationBox.style.boxShadow = "0 4px 8px rgba(0, 0, 0, 0.3)";
+        notificationBox.style.zIndex = "1000";
+        notificationBox.style.fontSize = "14px";
+        notificationBox.style.textAlign = "right";
+        notificationBox.style.direction = "rtl";
+        notificationBox.style.maxWidth = "300px";
+
+        notificationBox.innerHTML = `
+            <strong>إشعار جديد</strong><br>
+            ${message}
+            <br><button onclick="closeNotification()" style="margin-top:10px; padding:5px 10px; background:#555; color:#fff; border:none; border-radius:5px; cursor:pointer;">إغلاق</button>
+        `;
+
+        document.body.appendChild(notificationBox);
+    }
+
+    function closeNotification() {
+        let notificationBox = document.getElementById("notificationPopup");
+        if (notificationBox) {
+            notificationBox.remove();
+        }
+    }
+
+    // تشغيل الإشعار عند تحميل الصفحة
+    window.onload = fetchLatestNotification;
+</script>
+
+</body>
+</html>

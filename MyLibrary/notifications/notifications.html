@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notifications</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"> <!-- Add FontAwesome -->
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #000000;
+            color: rgb(221, 221, 221);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            position: relative;
+        }
+        .container {
+            background-color: #201f1f;
+            padding: 20px;
+            border-radius: 15px;
+            max-width: 800px;
+            width: 100%;
+            text-align: center;
+            z-index: 1;
+        }
+        .notification {
+            background-color: #555;
+            padding: 15px;
+            border-left: 5px solid rgb(237, 235, 235);
+            margin-bottom: 10px;
+            border-radius: 5px;
+            text-align: right;
+            direction: rtl;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            
+        }
+        div .notification{
+            color: #b0adad;
+        }
+        
+        h2{
+            color: #555555;
+        }
+        
+        .back-button {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            border: none;
+            color: white; /* Button color set to white */
+            cursor: pointer;
+            font-size: 30px;
+            background: none;
+            z-index: 2; /* Ensure it stays on top */
+            padding: 10px;
+        }
+        
+        .back-button i {
+            font-size: 24px; /* Adjust icon size */
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Back button -->
+    <button class="back-button" onclick="location.href='../../MainApp.html';">
+        <i class="fas fa-arrow-right"></i>
+    </button>
+
+    <div class="container" id="notifications">
+        <h2>Notifications</h2>
+    </div>
+
+    <script>
+        async function fetchNotifications() {
+            try {
+                const response = await fetch('https://raw.githubusercontent.com/FlickGate/TheAppFG/refs/heads/main/Notifications');
+                const data = await response.json();
+                const container = document.getElementById('notifications');
+
+                data.forEach(notification => {
+                    for (const key in notification) {
+                        if (notification.hasOwnProperty(key)) {
+                            const div = document.createElement('div');
+                            div.classList.add('notification');
+                            div.textContent = notification[key];
+                            container.appendChild(div);
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error('Error fetching notifications:', error);
+            }
+        }
+
+        fetchNotifications();
+    </script>
+</body>
+</html>
+

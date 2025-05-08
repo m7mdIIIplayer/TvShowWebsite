@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مشاهدة الحلقة</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="TrSeriesCss/TrWatchEpisodes.css">
+    <link rel="stylesheet" href="TrSeriesCss/TrSeriesAds.css">
+</head>
+<body>
+    <header>
+        <h1>مشاهدة الحلقة</h1>
+        <a href="../MainApp.html">
+            <img id="siteLogo" class="logo" src="https://raw.githubusercontent.com/FlickGate/TheAppFG/refs/heads/main/logo.png" alt="Logo">
+        </a>
+    </header>
+    
+    <hr> <!-- إضافة خط أفقي هنا -->
+    
+    <!--Ads S-->
+    <div class="ad-container"></div>
+    <!--Ads E-->
+        
+    <div id="content">
+        <div id="episode-player">
+            <iframe id="episode-video" src="" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+        </div>
+        <div id="buttons-container">
+            <button id="back-button">العودة</button>
+            <button id="next-episode">التالي</button>
+        </div>
+    </div>
+
+    <!--Ads S-->
+    <div class="ad-container"></div>
+    <!--Ads E-->
+    
+    <script>
+        $(document).ready(function() {
+            let urlParams = new URLSearchParams(window.location.search);
+            let episodeId = urlParams.get('episode'); // الحصول على معرّف الحلقة من الرابط
+
+            // التحقق من وجود معرّف الحلقة
+            if (!episodeId) {
+                alert("معرف الحلقة غير موجود في الرابط.");
+                return;
+            }
+
+            // تحميل بيانات الحلقات من ملف JSON
+            $.getJSON("https://raw.githubusercontent.com/FlickGate/TheAppFG/refs/heads/main/TurkishSeries", function(data) {
+                // العثور على الحلقة بناءً على معرّف الحلقة
+                let episode = null;
+                let currentSeason = null;
+
+                // البحث عن الحلقة ضمن الفئات والمواسم
+                data.categories.forEach(category => {
+                    category.series.forEach(series => {
+                        series.seasons.forEach(season => {
+                            let foundEpisode = season.episodes.find(ep => ep.episodeId === episodeId);
+                            if (foundEpisode) {
+                                episode = foundEpisode;
+                                currentSeason = season;
+                            }
+                        });
+                    });
+                });
+
+                // التحقق من وجود الحلقة
+                if (episode) {
+                    // تعيين رابط الفيديو
+                    $('#episode-video').attr('src', episode.video_url);
+                } else {
+                    alert("لم يتم العثور على الحلقة.");
+                    return;
+                }
+
+                // التعامل مع زر الحلقة التالية
+                $('#next-episode').click(function() {
+                    // العثور على الحلقة التالية ضمن نفس الموسم
+                    let currentEpisodeIndex = currentSeason.episodes.findIndex(ep => ep.episodeId === episodeId);
+                    if (currentEpisodeIndex < currentSeason.episodes.length - 1) {
+                        let nextEpisode = currentSeason.episodes[currentEpisodeIndex + 1];
+                        window.location.href = 'TrWatchEpisodes.html?episode=' + encodeURIComponent(nextEpisode.episodeId);
+                    } else {
+                        alert('لا توجد حلقة تالية.');
+                    }
+                });
+            }).fail(function() {
+                alert("فشل في تحميل البيانات.");
+            });
+
+            // زر العودة للصفحة السابقة - استدعاء الوظيفة مرتين
+            $('#back-button').click(function() {
+                window.history.back();
+                setTimeout(function() {
+                    window.history.back();
+                }, 100); // التأخير القصير للتأكد من تنفيذ العملية الثانية
+            });
+        });
+    </script>
+<!--Ads Start-->
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        fetch("https://raw.githubusercontent.com/FlickGate/TheAppFG/refs/heads/main/Ads")
+            .then(response => response.json())
+            .then(data => {
+                document.querySelectorAll(".ad-container").forEach(ad => {
+                    ad.innerHTML = `
+                        <div id="frame">
+                            <iframe data-aa='${data.ad_id}' src='${data.ad_url}?size=970x90'></iframe>
+                            <a id="preview-link" href="${data.ad_link}">${data.ad_text}</a>
+                        </div>
+                    `;
+                });
+            })
+            .catch(error => console.error("خطأ في تحميل بيانات الإعلان:", error));
+    });
+</script>
+<!--Ads End-->
+
+</body>
+</html>

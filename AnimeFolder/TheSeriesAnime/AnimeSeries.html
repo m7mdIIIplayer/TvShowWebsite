@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مسلسلات الأنمي</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="AnimeSeriesFormat.css">
+
+    <style>
+        /* تعديل الأيقونة */
+        #filter-icon {
+            font-size: 24px;
+            color: #ffffff;
+            background-color: #333;
+            cursor: pointer;
+            position: absolute;
+            top: 80px;
+            right: 20px;
+            z-index: 100;
+            padding: 12px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+
+        #filter-icon:hover {
+            background-color: #444;
+            transform: scale(1.1);
+        }
+
+        /* تعديل قائمة الفلتر */
+        #category-filter {
+            position: absolute;
+            top: 135px;
+            right: 20px;
+            background-color: #2a2a2a;
+            color: #fff;
+            padding: 10px;
+            border-radius: 8px;
+            display: none;
+            z-index: 99;
+            width: 100px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            max-height: 80%;
+            overflow-y: auto;
+        }
+
+        #category-filter label {
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        /* تنسيق زر Reset */
+        #reset-filter {
+            background-color: #980606;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            width: 100%;
+            margin-top: 10px;
+            display: block;
+        }
+
+        #reset-filter:hover {
+            background-color: #b74f4f;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <i class="fas fa-arrow-left back-btn" onclick="window.location.href='../../MainApp.html'"></i>
+        <h1>مسلسلات الأنمي</h1>
+    </header>
+    <hr class="header-line">
+
+    <!-- أيقونة الفلتر -->
+    <i class="fas fa-filter" id="filter-icon"></i>
+
+    <!-- فلتر التصنيف باستخدام checkboxes -->
+    <div id="category-filter">
+        <label><input type="checkbox" class="category-checkbox" value="Action"> أكشن</label>
+        <label><input type="checkbox" class="category-checkbox" value="Comedy"> كوميدي</label>
+        <label><input type="checkbox" class="category-checkbox" value="Crime"> جريمة</label>
+        <label><input type="checkbox" class="category-checkbox" value="Romance"> رومانسي</label>
+        <label><input type="checkbox" class="category-checkbox" value="Fantasy"> خيال علمي</label>
+        <label><input type="checkbox" class="category-checkbox" value="Drama"> دراما</label>
+        <label><input type="checkbox" class="category-checkbox" value="Thriller"> أثارة</label>
+        <label><input type="checkbox" class="category-checkbox" value="Horror"> رعب</label>
+        <button id="reset-filter">Reset</button>
+    </div>
+
+    <div class="series-container" id="series-list"></div>
+
+    <script>
+$(document).ready(function() {
+    let allAnimeSeries = [];
+    let filteredAnimeSeries = [];
+    let displayedCount = 0;
+    const batchSize = 20;
+
+    // تحميل بيانات الأنمي
+    $.getJSON("https://raw.githubusercontent.com/FlickGate/TheAppFG/refs/heads/main/AnimeSeries", function(data) {
+        allAnimeSeries = data.animeSeries;
+        filteredAnimeSeries = allAnimeSeries;
+        loadMoreSeries();
+    });
+
+    // عرض الأنميات
+    function displaySeries(seriesList) {
+        seriesList.forEach(function(anime) {
+            let seriesElement = `
+                <div class="series" data-category="${anime.cate}" onclick="window.location.href='AnimeSeriesSeasons.html?animeId=${encodeURIComponent(anime.animeId)}'">
+                    <div class="rating">${anime.rating}</div>
+                    <img src="${anime.imageUrl}" alt="${anime.animeTitle}" class="lazy-load">
+                    <div class="overlay"></div>
+                    <div class="series-info">
+                        <div class="series-title">${anime.animeTitle}</div>
+                        <div class="year">${anime.releaseYear}</div>
+                        <div class="SeasonsNum">${anime.totalSeasons} S</div>
+                    </div>
+                </div>
+            `;
+            $('#series-list').append(seriesElement);
+        });
+    }
+
+    // تحميل المزيد من المسلسلات عند التمرير
+    function loadMoreSeries() {
+        if (displayedCount < filteredAnimeSeries.length) {
+            let nextBatch = filteredAnimeSeries.slice(displayedCount, displayedCount + batchSize);
+            displaySeries(nextBatch);
+            displayedCount += batchSize;
+        }
+    }
+
+    // التحقق من التمرير لتحميل المزيد
+    $(window).on('scroll', function() {
+        if ($(window).scrollTop() + $(window).height() >= $(document).height() - 100) {
+            loadMoreSeries();
+        }
+    });
+
+    // تصفية الأنميات حسب التصنيف
+    window.filterSeries = function() {
+        let selectedCategories = $('.category-checkbox:checked').map(function() {
+            return $(this).val();
+        }).get();
+
+        displayedCount = 0;
+        $('#series-list').empty();
+        filteredAnimeSeries = selectedCategories.length ? 
+            allAnimeSeries.filter(anime => selectedCategories.includes(anime.cate)) : 
+            allAnimeSeries;
+        loadMoreSeries();
+    };
+
+    // إضافة مستمع الحدث على checkboxes
+    $('.category-checkbox').on('change', function() {
+        filterSeries();
+    });
+
+    // إظهار/إخفاء الفلتر
+    $('#filter-icon').on('click', function() {
+        $('#category-filter').toggle();
+    });
+
+    // إخفاء قائمة الفلتر عند النقر خارجها
+    $(document).on('click', function(event) {
+        if (!$(event.target).closest('#category-filter, #filter-icon').length) {
+            $('#category-filter').hide();
+        }
+    });
+
+    // زر إعادة التصفية
+    $('#reset-filter').on('click', function() {
+        $('.category-checkbox').prop('checked', false);
+        filterSeries();
+    });
+});
+    </script>
+</body>
+</html>

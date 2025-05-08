@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Season Episodes</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@200;300;400;500;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="AnimeSeriesEpisodes.css">
+    <style>
+        #episode-search {
+            display: block;
+            width: 200px;
+            margin: 20px 20px 20px auto;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 14px;
+            text-align: right;
+            direction: rtl;
+        }
+        .episode-container {
+            position: relative;
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        .episode-number {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            background-color: rgba(200, 200, 200, 0.5);
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 14px;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <i class="fas fa-arrow-left back-btn" onclick="window.history.back()"></i>
+        <h1 id="season-title"></h1>
+        <a href="../../MainApp.html">
+            <img id="siteLogo" class="logo" src="https://raw.githubusercontent.com/FlickGate/TheAppFG/refs/heads/main/logo.png" alt="Logo">
+        </a>
+    </header>
+    <hr style="border-color: #333; margin-bottom: 20px;">
+    <!--Ads S-->
+    <div class="ad-container"></div>
+    <!--Ads E-->
+    
+    <input type="text" id="episode-search" placeholder="ابحث عن رقم الحلقة...">
+    
+    <div class="container" id="episodes-list"></div>
+
+    <script>
+        $(document).ready(function(){
+            // الحصول على seasonId و animeId من الرابط
+            let urlParams = new URLSearchParams(window.location.search);
+            let seasonId = urlParams.get('seasonId');
+    
+            $.getJSON("https://raw.githubusercontent.com/FlickGate/TheAppFG/refs/heads/main/AnimeSeries", function(data){
+                let animeSeries = data.animeSeries;
+                
+                // البحث عن الأنمي الذي يتطابق مع seasonId
+                animeSeries.forEach(function(anime) {
+                    anime.seasons.forEach(function(season) {
+                        if (season.seasonId === seasonId) {
+                            // تعيين عنوان الموسم
+                            $('#season-title').text(season.seasonTitle);
+                            
+                            // عرض الحلقات الخاصة بالموسم مع الترقيم
+                            season.episodes.forEach(function(episode, index) {
+                                let episodeNumber = index + 1;  // ترقيم الحلقات
+                                let episodeElement = `
+                                    <div class="episode-container" data-episode-number="${episodeNumber}" onclick="window.location.href='WatchAnimeSeries.html?episode=${encodeURIComponent(episode.episodeId)}'">
+                                        <img src="${episode.imageUrl}" alt="Image of ${episode.episodeTitle}">
+                                        <div class="episode-info">
+                                            <h3>${episode.episodeTitle}</h3>
+                                            <p class="duration">${episode.duration}</p>
+                                            <p>${episode.description}</p>
+                                        </div>
+                                        <span class="episode-number">${episodeNumber}</span> <!-- إضافة ترقيم الحلقة -->
+                                    </div>`;
+                                $('#episodes-list').append(episodeElement);
+                            });
+                        }
+                    });
+                });
+            });
+
+            // إضافة وظيفة البحث عن الحلقة باستخدام رقم الحلقة
+            $('#episode-search').on('input', function() {
+                let searchValue = $(this).val().trim();
+                $('.episode-container').each(function() {
+                    let episodeNumber = $(this).attr('data-episode-number');
+                    $(this).toggle(searchValue === '' || episodeNumber === searchValue);
+                });
+            });
+        });
+    </script>
+
+    <!--Ads S-->
+    <div class="ad-container"></div>
+    <!--Ads E-->
+
+    <!--Ads Start-->
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            fetch("https://raw.githubusercontent.com/FlickGate/TheAppFG/refs/heads/main/Ads")
+                .then(response => response.json())
+                .then(data => {
+                    document.querySelectorAll(".ad-container").forEach(ad => {
+                        ad.innerHTML = `
+                            <div id="frame" style="width: 970px; margin: 0 auto; position: relative; text-align: right;">
+                                <iframe data-aa='${data.ad_id}' src='${data.ad_url}?size=970x90' 
+                                        style='width: 970px; height: 90px; border: 0; padding: 0; overflow: hidden; background-color: transparent; display: block; margin: 0 auto;'></iframe>
+                                <a id="preview-link" href="${data.ad_link}"
+                                   style="display: block; font-size: 12px; margin: 0; padding: 0; line-height: 1;">${data.ad_text}</a>
+                            </div>
+                        `;
+                    });
+                })
+                .catch(error => console.error("خطأ في تحميل بيانات الإعلان:", error));
+        });
+    </script>
+    <!--Ads End-->
+    
+</body>
+</html>

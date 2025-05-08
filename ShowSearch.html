@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>نتائج البحث</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin: 20px;
+      background-color: #000;
+      color: #fff;
+    }
+    #content {
+      margin-top: 20px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .result {
+      margin: 10px;
+      padding: 10px;
+      width: 320px;
+      background-color: rgb(37, 37, 37);
+      border-radius: 10px;
+      box-sizing: border-box;
+    }
+    .result img {
+      width: 300px;
+      height: auto;
+      cursor: pointer;
+      border-radius: 8px;
+    }
+    .title {
+      font-size: 22px;
+      font-weight: bold;
+      margin: 10px 0;
+    }
+    .details {
+      font-size: 18px;
+      margin: 5px 0;
+    }
+    .back-btn {
+      display: inline-block;
+      margin-top: 30px;
+      padding: 10px 20px;
+      background-color: #600202;
+      color: #fff;
+      text-decoration: none;
+      border-radius: 5px;
+    }
+    .back-btn:hover {
+      background-color: #300101;
+    }
+  </style>
+</head>
+<body>
+  <h1>نتائج البحث</h1>
+  <div id="content">جارٍ البحث...</div>
+  <a href="MainApp.html" class="back-btn">العودة</a>
+
+  <script>
+    // عند تحميل الصفحة، نستخرج كلمة البحث من الرابط
+    document.addEventListener("DOMContentLoaded", function() {
+      const params = new URLSearchParams(window.location.search);
+      const query = params.get("query");
+      if (!query) {
+        document.getElementById("content").textContent = "لم يتم تمرير كلمة البحث.";
+        return;
+      }
+      searchMovie(query);
+    });
+
+    // دالة البحث تقوم بالتالي:
+    // - جلب البيانات من المصادر المختلفة
+    // - البحث عن الكلمة في كل مصدر
+    // - جمع النتائج وعرضها
+    async function searchMovie(query) {
+      const endpoints = [
+        'https://raw.githubusercontent.com/FlickGate/TheAppFG/refs/heads/main/AnimeFilms',
+        'https://raw.githubusercontent.com/FlickGate/TheAppFG/refs/heads/main/ArabicSeries',
+        'https://raw.githubusercontent.com/FlickGate/TheAppFG/refs/heads/main/KdramaSeries',
+        'https://raw.githubusercontent.com/FlickGate/TheAppFG/refs/heads/main/Series',
+        'https://raw.githubusercontent.com/FlickGate/TheAppFG/refs/heads/main/AnimeSeries',
+        'https://raw.githubusercontent.com/FlickGate/TheAppFG/refs/heads/main/Movies',
+        'https://raw.githubusercontent.com/FlickGate/TheAppFG/refs/heads/main/TurkishSeries',
+        'https://raw.githubusercontent.com/FlickGate/TheAppFG/refs/heads/main/RamadanSeries',
+        'https://raw.githubusercontent.com/FlickGate/TheAppFG/refs/heads/main/IndianSeries'
+      ];
+      
+      let results = [];
+      const lowerQuery = query.toLowerCase();
+
+      for (let url of endpoints) {
+        try {
+          const response = await fetch(url);
+          const data = await response.json();
+          let result = null;
+
+          if (url.includes("AnimeFilms")) {
+            result = data.find(item => item.AnimeTitle && item.AnimeTitle.toLowerCase().includes(lowerQuery));
+            if (result) { result.sourceUrl = url; results.push(result); }
+          } else if (url.includes("AnimeSeries")) {
+            if (data.animeSeries && Array.isArray(data.animeSeries)) {
+              result = data.animeSeries.find(item => item.animeTitle && item.animeTitle.toLowerCase().includes(lowerQuery));
+              if (result) { result.sourceUrl = url; results.push(result); }
+            }
+          } else if (url.includes("Series") || url.includes("ArabicSeries") || url.includes("KdramaSeries") || url.includes("RamadanSeries") || url.includes("IndianSeries") || url.includes("TurkishSeries")) {
+            if (data.categories && Array.isArray(data.categories)) {
+              for (let category of data.categories) {
+                if (category.series && Array.isArray(category.series)) {
+                  result = category.series.find(item => item.title && item.title.toLowerCase().includes(lowerQuery));
+                  if (result) {
+                    // يمكن دمج بعض بيانات التصنيف إذا لزم الأمر
+                    result.DadFolder = category.DadFolder || "";
+                    result.cate = category.cate || "";
+                    result.SonFolder = category.SonFolder || "";
+                    result.sourceUrl = url;
+                    results.push(result);
+                    break; // إذا وُجد نتيجة في هذا التصنيف، ننتقل للمصدر التالي
+                  }
+                }
+              }
+            }
+          } else if (url.includes("Movies")) {
+            result = data.find(item => item.title && item.title.toLowerCase().includes(lowerQuery));
+            if (result) { result.sourceUrl = url; results.push(result); }
+          }
+        } catch (err) {
+          console.error("خطأ في جلب البيانات من:", url, err);
+        }
+      }
+
+      if (results.length === 0) {
+        document.getElementById("content").textContent = "لم يتم العثور على نتائج لهذا البحث.";
+      } else {
+        displayResults(results);
+      }
+    }
+
+    // دالة عرض النتائج
+    function displayResults(results) {
+      const container = document.getElementById("content");
+      container.innerHTML = "";
+      results.forEach(item => {
+        const resultDiv = document.createElement("div");
+        resultDiv.className = "result";
+        
+        // الصورة
+        const img = document.createElement("img");
+        img.src = item.image_url || item.SeriesImageUrl || item.ImageUrl || "";
+        img.alt = item.title || item.AnimeTitle || item.animeTitle || "";
+        img.onclick = function() {
+          let targetUrl = generateUrl(item);
+          if (targetUrl) window.location.href = targetUrl;
+        };
+        resultDiv.appendChild(img);
+        
+        // العنوان
+        const titleDiv = document.createElement("div");
+        titleDiv.className = "title";
+        titleDiv.textContent = item.title || item.AnimeTitle || item.animeTitle || "";
+        resultDiv.appendChild(titleDiv);
+        
+        // التفاصيل (مثال على الوصف، يمكن إضافة المزيد إذا وُجدت بيانات أخرى)
+        const detailsDiv = document.createElement("div");
+        detailsDiv.className = "details";
+        resultDiv.appendChild(detailsDiv);
+        
+        container.appendChild(resultDiv);
+      });
+    }
+
+    // دالة توليد الرابط بناءً على مصدر البيانات
+    function generateUrl(item) {
+      let targetUrl = "";
+      if(item.sourceUrl.includes("AnimeFilms")) {
+        targetUrl = `/AnimeFolder/TheFilmsAnime/WatchAnimeFilms.html?title=${encodeURIComponent(item.AnimeTitle)}&description=${encodeURIComponent(item.AnimeDescription)}&video_url=${encodeURIComponent(item.VideoUrl)}&image_url=${encodeURIComponent(item.ImageUrl)}`;
+      } else if(item.sourceUrl.includes("ArabicSeries")) {
+        targetUrl = `./ArabicFolder/ArSeasons.html?title=${encodeURIComponent(item.title)}&image_url=${encodeURIComponent(item.image_url)}&description=${encodeURIComponent(item.description)}`;
+      } else if(item.sourceUrl.includes("KdramaSeries")) {
+        targetUrl = `./KdramaFolder/KdSeasons.html?title=${encodeURIComponent(item.title)}&image_url=${encodeURIComponent(item.image_url)}&description=${encodeURIComponent(item.description)}`;
+      } else if(item.sourceUrl.includes("Series")) {
+        targetUrl = `./SeriesFFolder/Seasons.html?title=${encodeURIComponent(item.title)}&image_url=${encodeURIComponent(item.image_url)}&description=${encodeURIComponent(item.description)}`;
+      } else if(item.sourceUrl.includes("AnimeSeries")) {
+        targetUrl = `./AnimeFolder/TheSeriesAnime/AnimeSeriesSeasons.html?animeId=${item.animeId}`;
+      } else if(item.sourceUrl.includes("Movies")) {
+        targetUrl = `./Movies/MovieWatch.html?title=${encodeURIComponent(item.title)}&description=${encodeURIComponent(item.description)}&video_url=${encodeURIComponent(item.video_url)}&image_url=${encodeURIComponent(item.image_url)}`;
+      } else if(item.sourceUrl.includes("TurkishSeries")) {
+        targetUrl = `./TurkishFolder/TrSeasons.html?title=${encodeURIComponent(item.title)}&image_url=${encodeURIComponent(item.image_url)}&description=${encodeURIComponent(item.description)}`;
+      } else if(item.sourceUrl.includes("RamadanSeries")) {
+        targetUrl = `./RamadanFolder/RaSeasons.html?title=${encodeURIComponent(item.title)}&image_url=${encodeURIComponent(item.image_url)}&description=${encodeURIComponent(item.description)}`;
+      } else if(item.sourceUrl.includes("IndianSeries")) {
+        targetUrl = `./IndianFolder/InSeasons.html?title=${encodeURIComponent(item.title)}&image_url=${encodeURIComponent(item.image_url)}&description=${encodeURIComponent(item.description)}`;
+      } else {
+        alert("رابط قاعدة البيانات غير مدعوم.");
+      }
+      return targetUrl;
+    }
+  </script>
+</body>
+</html>

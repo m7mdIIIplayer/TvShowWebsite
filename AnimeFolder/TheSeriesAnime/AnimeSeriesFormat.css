@@ -1,0 +1,213 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #000000;
+    margin: 0;
+    padding: 0;
+}
+html, body {
+    width: 100%;
+    overflow-x: hidden;
+}
+
+header {
+    background-color: #000000;
+    color: white;
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+}
+
+header .back-btn {
+    font-size: 20px;
+    margin-right: 20px;
+    cursor: pointer;
+}
+
+header h1 {
+    flex-grow: 1;
+    text-align: center;
+    font-family: 'Poppins', sans-serif;
+    font-size: 32px;
+    font-weight: 700;
+    margin: 0;
+}
+
+.series-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start; /* يبدأ من الجهة اليسرى */
+    margin-top: 20px;
+    padding: 0 10px;
+}
+
+.series {
+    background-color: #333;
+    border-radius: 8px;
+    margin: 10px;
+    width: 150px; /* تعديل العرض */
+    height: 255px; /* تعديل الارتفاع */
+    cursor: pointer;
+    overflow: hidden;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s;
+    position: relative;
+}
+
+/* تأثير التكبير عند التحويم */
+.series:hover {
+    transform: scale(1.05);
+}
+
+/* الصورة */
+.series img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 0; /* الصورة تحت الطبقة السوداء */
+}
+
+/* الطبقة السوداء المتدرجة */
+.series .overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.688), rgba(0, 0, 0, 0)); /* التدرج الأسود */
+    z-index: 1; /* الطبقة السوداء فوق الصورة */
+    opacity: 0; /* إخفاء الطبقة في الوضع العادي */
+    transition: opacity 0.3s ease; /* تأثير عند التحويم */
+}
+
+/* إظهار الطبقة المتدرجة عند التحويم */
+.series:hover .overlay {
+    opacity: 1; /* إظهار الطبقة السوداء عند التحويم */
+}
+
+/* معلومات المسلسل */
+.series-info {
+    position: absolute;
+    bottom: 0;
+    color: white;
+    text-align: left;
+    margin-left: 5px;
+    margin-right: 5px;
+    font-weight: bold;
+    padding: 5px 0 10px 0; /* إضافة padding من الأسفل لرفع النص للأعلى */
+    opacity: 0; /* إخفاء النصوص في الوضع العادي */
+    transition: opacity 0.3s ease;
+    font-size: 14px;
+    z-index: 2; /* النصوص فوق الطبقة السوداء */
+}
+
+/* إظهار النصوص عند التحويم */
+.series:hover .series-info {
+    opacity: 1;
+}
+
+/* التقييم */
+.rating {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background-color: rgb(213, 178, 5);
+    color: rgb(0, 0, 0);
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 14px;
+}
+
+button {
+    display: none;
+}
+.logo {
+    height: 50px;
+    cursor: pointer;
+    margin-left: auto; /* لضمان محاذاته لليمين داخل الهيدر */
+}
+
+/* تنسيق النصوص داخل معلومات الفيلم */
+.series-info div {
+    max-width: 140px; /* تحديد العرض */
+    max-height: 160px; /* تحديد الارتفاع */
+    margin-left: 5px;
+    margin-right: 5px;
+    text-overflow: ellipsis; /* ثلاث نقاط للنص الطويل */
+    white-space: normal; /* كسر الأسطر تلقائيًا */
+    word-wrap: break-word; /* كسر النص */
+    line-height: 1.3; /* ارتفاع السطر */
+}
+
+.series-title {
+    font-family: 'Roboto', sans-serif;
+    font-size: 16px;
+    font-weight: 500;
+    font-weight: bold;
+    color: #ccc;
+    margin-bottom: 3px; /* تقليل المسافة تحت العنوان */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.year {
+    font-family: 'Roboto', sans-serif;
+    font-size: 13px; /* تقليل حجم الخط */
+    font-weight: 300;
+    font-weight: bold;
+    color: #aaa;
+    margin-bottom: 3px; /* تقليل المسافة تحت العام */
+}
+
+.SeasonsNum {
+    font-family: 'Roboto', sans-serif;
+    font-size: 13px; /* تقليل حجم الخط */
+    font-weight: 500;
+    color: #aaa;
+    margin-bottom: 3px; /* تقليل المسافة تحت الموسم */
+}
+
+/* ضبط موقع الأيقونة */
+.series {
+    position: relative; /* لتثبيت الأيقونة داخل العنصر */
+    overflow: hidden;
+}
+
+.icon-overlay {
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 0;
+    bottom: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 0; /* إخفاء الأيقونة افتراضيًا */
+    transition: opacity 0.3s ease;
+    background: rgba(0, 0, 0, 0); /* خلفية شفافة خفيفة */
+    z-index: 1;
+}
+
+.google-play-icon {
+    font-size: 40px;
+    color: white;
+    transition: transform 0.4s ease; /* حركة دوران سلسة */
+    transform: rotate(0deg);
+}
+
+/* إظهار الأيقونة عند التمرير */
+.series:hover .icon-overlay {
+    opacity: 1;
+}
+
+.series:hover .google-play-icon {
+    transform: rotate(360deg); /* دوران عند التمرير */
+}
+/* تنسيق الخط الأفقي تحت الهيدر */
+.header-line {
+    border: 0; /* إزالة الحدود الافتراضية */
+    height: 1px; /* تحديد سماكة الخط */
+    background-color: #333; /* تحديد اللون */
+    margin-top: 0px; /* إضافة مسافة فوق وتحت الخط */
+    margin-bottom: 20px; /* إضافة مسافة فوق وتحت الخط */
+}

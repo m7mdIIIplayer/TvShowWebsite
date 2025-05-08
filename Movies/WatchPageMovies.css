@@ -1,0 +1,231 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #000;
+    color: white;
+    margin: 0;
+    padding: 0;
+}
+
+.header-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 50px;
+}
+
+.back-button {
+    font-size: 20px;
+    color: white;
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+}
+
+.movie-cover {
+    position: relative;
+    width: calc(100% - 40px);
+    height: 500px;
+    overflow: hidden;
+    margin: 50px auto 0;
+    border-radius: 8px;
+    margin-bottom: 50px;
+}
+
+.movie-cover img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.cover-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 50%;
+    background: linear-gradient(to top, rgba(0, 0, 0, 1), rgba(0, 0, 0, 0));
+    color: white;
+    padding: 20px;
+    text-align: left;
+}
+
+.cover-overlay h1 {
+    margin: 0;
+    font-size: 50px; /* تكبير عنوان الفيلم */
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7); /* إضافة ظل أسود خفيف */
+    font-weight: bold;
+}
+
+.cover-overlay p {
+    margin: 5px 0;
+    font-size: 18px;
+    line-height: 1.5;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7); /* إضافة ظل أسود خفيف */
+}
+
+/* وصف الفيلم */
+.movie-description {
+    font-family: 'Tajawal', sans-serif; /* استخدام خط Tajawal */
+    font-size: 18px;
+    line-height: 1.6;
+    color: white;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7); /* إضافة ظل أسود خفيف */
+    text-align: right; /* تأكيد اتجاه النص لليمين */
+    padding-right: 50px;
+    width: 700px; /* تحديد العرض */
+    max-height: 200px; /* تحديد الحد الأقصى للارتفاع */
+    overflow: hidden; /* إخفاء النصوص الزائدة */
+    overflow-y: auto; /* تمكين التمرير الرأسي إذا كانت النصوص أكبر من الحجم المحدد */
+    border-radius: 8px;
+    position: absolute;
+    bottom: 60px;
+    right: 10px;
+    direction: rtl;
+}
+
+.movie-video {
+    margin-top: 20px;
+    text-align: center;
+}
+.add-to-watchlist-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 18px;
+    padding: 12px 24px;
+    border: none;
+    background-color: transparent;
+    color: #fff;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.add-to-watchlist-btn i {
+    font-size: 24px;
+    transition: transform 0.3s ease, color 0.3s ease;
+}
+
+.add-to-watchlist-btn.added i {
+    color: #FFD700; /* Gold color for filled star */
+    animation: pop 0.5s ease forwards;
+}
+
+@keyframes pop {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.4);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+
+iframe {
+    width: 80%;
+    height: 500px;
+    border-radius: 8px;
+    margin-bottom: 100px;
+    margin-top: 100px;
+}
+.logo {
+    height: 50px;
+    cursor: pointer;
+    margin-left: auto; /* لضمان محاذاته لليمين داخل الهيدر */
+}
+
+@media screen and (max-width: 430px) {
+    .movie-description {
+        width: 90%; /* اجعل الوصف يمتد بعرض مناسب للشاشة */
+        max-height: none; /* أزل الحد الأقصى للارتفاع لتجنب القطع */
+        font-size: 16px; /* تصغير حجم الخط قليلاً ليناسب المساحة */
+        padding-right: 20px; /* تقليل التباعد من اليمين */
+        position: static; /* إزالة الوضع المطلق ليظهر بشكل طبيعي */
+        margin: 25px 0 25px auto; /* تقليل المارجن من اليمين */
+        text-align: right; /* توسيط النص في الشاشات الصغيرة */
+    }
+
+    .movie-cover {
+        height: 350px; /* تقليل ارتفاع الغلاف لتناسب الشاشات الصغيرة */
+    }
+
+    .cover-overlay h1 {
+        font-size: 25px; /* تصغير العنوان ليكون متناسقًا */
+    }
+
+    iframe {
+        width: 100%; /* تأكد من أن الفيديو يتناسب مع عرض الشاشة */
+        height: 250px; /* تقليل ارتفاع الفيديو ليظهر بشكل جيد */
+    }
+}
+
+@media screen and (min-width: 431px) and (max-width: 760px) {
+    .movie-description {
+        width: 85%; /* توسيع الوصف ليتناسب مع الشاشات المتوسطة */
+        max-height: none; /* السماح للنص بالظهور كاملاً */
+        font-size: 17px; /* تقليل حجم الخط قليلاً */
+        padding-right: 15px; /* تقليل المسافة من اليمين */
+        text-align: right; /* توسيط النص */
+        position: static; /* جعله يأخذ مكانه الطبيعي */
+        margin: 25px 0 25px auto; /* تقليل المارجن من اليمين */
+    }
+
+    .movie-cover {
+        height: 450px; /* تعديل ارتفاع الغلاف */
+    }
+
+    .cover-overlay h1 {
+        font-size: 40px; /* تقليل حجم العنوان قليلاً */
+    }
+
+    iframe {
+        width: 100%; /* جعل الفيديو يتناسب مع الشاشة */
+        height: 400px; /* ضبط ارتفاع الفيديو */
+    }
+
+    .header-bar {
+        padding: 15px 40px; /* تقليل الهوامش في الهيدر */
+    }
+
+    .add-to-watchlist-btn {
+        font-size: 16px; /* تصغير حجم الخط */
+        padding: 12px 22px; /* تعديل حجم الزر */
+    }
+}
+
+@media screen and (min-width: 761px) and (max-width: 1024px) {
+    .movie-description {
+        width: 85%; /* توسيع الوصف ليتناسب مع الشاشات المتوسطة */
+        max-height: none; /* السماح للنص بالظهور كاملاً */
+        font-size: 17px; /* تقليل حجم الخط قليلاً */
+        padding-right: 15px; /* تقليل المسافة من اليمين */
+        text-align: right; /* توسيط النص */
+        position: static; /* جعله يأخذ مكانه الطبيعي */
+        margin: 25px 0 25px auto; /* تقليل المارجن من اليمين */
+    }
+
+    .movie-cover {
+        height: 450px; /* تعديل ارتفاع الغلاف */
+    }
+
+    .cover-overlay h1 {
+        font-size: 40px; /* تقليل حجم العنوان قليلاً */
+    }
+
+    iframe {
+        width: 100%; /* جعل الفيديو يتناسب مع الشاشة */
+        height: 400px; /* ضبط ارتفاع الفيديو */
+    }
+
+    .header-bar {
+        padding: 15px 40px; /* تقليل الهوامش في الهيدر */
+    }
+
+    .add-to-watchlist-btn {
+        font-size: 16px; /* تصغير حجم الخط */
+        padding: 12px 22px; /* تعديل حجم الزر */
+    }
+}

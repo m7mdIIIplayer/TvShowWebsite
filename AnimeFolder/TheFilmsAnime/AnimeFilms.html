@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>أفلام الأنمي</title>
+    <!-- إضافة رابط مكتبة Font Awesome لاستخدام الأيقونات -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="AnimeFilmsFormat.css">
+    <style>
+        /* إضافة CSS الخاص بالفلاتر وزر العودة للأعلى */
+        .filter-container {
+            display: block;
+            margin-top: 20px;
+            position: relative;
+            z-index: 1000;
+            text-align: right;
+            margin-right: 20px;
+        }
+
+        #filter-btn {
+            background-color: #333;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        #filter-btn:hover {
+            background-color: #555;
+        }
+
+        .filter-menu {
+            background-color: #2c2c2c;
+            padding: 5px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            width: 100px;
+            margin-top: 10px;
+            display: none;
+            position: absolute;
+            top: 100%;
+            right: 0;
+            text-align: left;
+        }
+
+        .genre-filter {
+            margin: 5px 0;
+        }
+
+        .fa-filter {
+            margin-right: 5px;
+        }
+
+        #reset-btn {
+            background-color: #980606;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+
+        #reset-btn:hover {
+            background-color: #b74f4f;
+        }
+
+        /* زر الرجوع للأعلى */
+        #scrollToTopBtn {
+            display: none;
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #980606;
+            color: white;
+            border: none;
+            padding: 0;
+            font-size: 20px;
+            border-radius: 50%;
+            cursor: pointer;
+            width: 50px;
+            height: 50px;
+        }
+
+        #scrollToTopBtn i {
+            color: white;
+            font-size: 24px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <button class="back-button" onclick="window.location.href='../../MainApp.html';">
+            <i class="fas fa-arrow-left back-btn" style="color: #ffffff;"></i>
+        </button>
+        أفلام الأنمي
+    </div>
+    <hr class="header-line">
+    <!--Ads S-->
+    <div class="ad-container"></div>
+    <!--Ads E--->
+
+    <!-- فلتر التصنيفات -->
+    <div class="filter-container">
+        <button id="filter-btn" onclick="toggleFilterMenu()">
+            <i class="fa fa-filter"></i> <!-- أيقونة الفلتر -->
+        </button>
+        <div id="filter-menu" class="filter-menu" style="display: none;">
+            <label><input type="checkbox" class="genre-filter" value="Action">أكشن</label><br>
+            <label><input type="checkbox" class="genre-filter" value="Comedy">كوميدي</label><br>
+            <label><input type="checkbox" class="genre-filter" value="Crime">جريمة</label><br>
+            <label><input type="checkbox" class="genre-filter" value="Romance">رومانسي</label><br>
+            <label><input type="checkbox" class="genre-filter" value="Fantasy">خيال علمي</label><br>
+            <label><input type="checkbox" class="genre-filter" value="Drama">دراما</label><br>
+            <label><input type="checkbox" class="genre-filter" value="Thriller">إثارة</label><br>
+            <label><input type="checkbox" class="genre-filter" value="Horror">رعب</label><br>
+            <button id="reset-btn" onclick="resetFilters()">Reset</button> <!-- زر Reset -->
+        </div>
+    </div>
+
+    <div class="movies-container" id="movies-container">
+        <!-- سيتم تحميل الأفلام هنا ديناميكيًا -->
+    </div>
+
+    <!-- زر الرجوع للأعلى -->
+    <button id="scrollToTopBtn" onclick="scrollToTop()">
+        <i class="fa-solid fa-up-long"></i>
+    </button>
+
+    <script>
+async function fetchMovies() {
+    const response = await fetch('https://raw.githubusercontent.com/FlickGate/TheAppFG/refs/heads/main/AnimeFilms');
+    const movies = await response.json();
+    return movies;
+}
+
+let allMovies = [];
+let filteredMovies = [];
+let loadedMovies = 0;
+const moviesPerLoad = 20;
+
+function loadMoreMovies() {
+    const container = document.getElementById('movies-container');
+    const fragment = document.createDocumentFragment();
+    
+    const moviesToLoad = filteredMovies.slice(loadedMovies, loadedMovies + moviesPerLoad);
+    moviesToLoad.forEach(movie => {
+        const movieElement = document.createElement('div');
+        movieElement.classList.add('movie');
+        movieElement.setAttribute('data-genres', movie.cate);
+        movieElement.innerHTML = `
+            <img data-src="${movie.ImageUrl}" alt="${movie.AnimeTitle}" class="lazy-image">
+            <div class="overlay"></div>
+            <div class="rating">${movie.rating || 'N/A'}</div>
+            <div class="movie-info">
+                <div class="movie-title">${movie.AnimeTitle}</div>
+            </div>
+            <div class="play-icon">
+                <i class="fa-brands fa-google-play"></i>
+            </div>
+        `;
+        
+        movieElement.onclick = () => {
+            sessionStorage.setItem('scrollPosition', window.scrollY);
+            window.location.href = `WatchAnimeFilms.html?title=${encodeURIComponent(movie.AnimeTitle)}&description=${encodeURIComponent(movie.AnimeDescription)}&video_url=${encodeURIComponent(movie.VideoUrl)}&image_url=${encodeURIComponent(movie.ImageUrl)}`;
+        };
+        fragment.appendChild(movieElement);
+    });
+    container.appendChild(fragment);
+    loadedMovies += moviesPerLoad;
+    applyLazyLoading();
+}
+
+function applyLazyLoading() {
+    const lazyImages = document.querySelectorAll('.lazy-image');
+    const observer = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+            const img = entry.target;
+            if (entry.isIntersecting) {
+                img.src = img.getAttribute('data-src');
+                img.classList.add('loaded');
+                observer.unobserve(img);
+            } else {
+                img.src = '';
+                img.classList.remove('loaded');
+            }
+        });
+    }, { rootMargin: '100px', threshold: 0.1 });
+    
+    lazyImages.forEach(image => observer.observe(image));
+}
+
+function toggleFilterMenu() {
+    const menu = document.getElementById('filter-menu');
+    menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+}
+
+function applyFilters() {
+    const selectedGenres = Array.from(document.querySelectorAll('.genre-filter:checked')).map(checkbox => checkbox.value);
+    filteredMovies = allMovies.filter(movie => selectedGenres.length === 0 || selectedGenres.includes(movie.cate));
+    document.getElementById('movies-container').innerHTML = '';
+    loadedMovies = 0;
+    loadMoreMovies();
+}
+
+window.addEventListener('scroll', () => {
+    if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 500) {
+        loadMoreMovies();
+    }
+});
+
+document.addEventListener('change', () => {
+    applyFilters();
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+    fetchMovies().then(movies => {
+        allMovies = movies;
+        filteredMovies = movies;
+        loadMoreMovies();
+        const scrollPosition = sessionStorage.getItem('scrollPosition');
+        if (scrollPosition) window.scrollTo(0, parseInt(scrollPosition));
+    });
+});
+
+function resetFilters() {
+    document.querySelectorAll('.genre-filter').forEach(checkbox => checkbox.checked = false);
+    filteredMovies = allMovies;
+    document.getElementById('movies-container').innerHTML = '';
+    loadedMovies = 0;
+    loadMoreMovies();
+}
+        // التحكم في زر الرجوع للأعلى
+        window.addEventListener('scroll', () => {
+            document.getElementById('scrollToTopBtn').style.display = window.scrollY > window.innerHeight ? 'block' : 'none';
+        });
+
+        function scrollToTop() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+    </script>
+        <!--Ads Start-->
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                fetch("https://raw.githubusercontent.com/FlickGate/TheAppFG/refs/heads/main/Ads")
+                    .then(response => response.json())
+                    .then(data => {
+                        document.querySelectorAll(".ad-container").forEach(ad => {
+                            ad.innerHTML = `
+                                <div id="frame">
+                                    <iframe data-aa='${data.ad_id}' src='${data.ad_url}?size=970x90'></iframe>
+                                    <a id="preview-link" href="${data.ad_link}">${data.ad_text}</a>
+                                </div>
+                            `;
+                        });
+                    })
+                    .catch(error => console.error("خطأ في تحميل بيانات الإعلان:", error));
+            });
+        </script>
+        <!--Ads End-->
+    
+</body>
+</html>

@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>All Series</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="SeriesCss/FSeriesCss.css">
+    <link rel="stylesheet" href="SeriesCss/SeriesAds.css">
+    <style>
+/* تعديل الأيقونة */
+#filter-icon {
+    font-size: 24px;
+    color: #ffffff;
+    background-color: #333;
+    cursor: pointer;
+    position: absolute; /* تعيين position إلى absolute داخل الهيدر */
+    top: 80px; /* تحديد المسافة بين الأيقونة والهيدر من الأعلى */
+    right: 20px; /* تحديد المسافة من اليمين */
+    z-index: 100; /* التأكد من أن الأيقونة ستكون في المقدمة */
+    padding: 12px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+#filter-icon:hover {
+    background-color: #444;
+    transform: scale(1.1);
+}
+
+/* تعديل قائمة الفلتر */
+#category-filter {
+    position: absolute; /* يبقى داخل الهيدر ولكن بعيد عن الأيقونة */
+    top: 135px; /* تعيين المسافة بين الأيقونة وقائمة الفلتر */
+    right: 20px;
+    background-color: #2a2a2a;
+    color: #fff;
+    padding: 10px;
+    border-radius: 8px;
+    display: none;
+    z-index: 99;
+    width: 100px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    max-height: 80%;
+    overflow-y: auto;
+}
+
+
+        #category-filter label {
+            display: block;
+            margin-bottom: 8px;
+        }
+
+/* تنسيق زر Reset */
+#reset-filter {
+    background-color: #980606;
+    color: white;
+    border: none;
+    padding: 8px 16px;  /* زيادة المسافة الداخلية */
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    width: 100%;
+    margin-top: 10px;
+    display: block; /* التأكد من أن الزر يعرض بشكل كامل */
+}
+
+#reset-filter:hover {
+    background-color: #b74f4f;
+}
+
+    </style>
+</head>
+
+<body>
+    <header>
+        <i class="fas fa-arrow-left back-btn" onclick="window.location.href='../MainApp.html'"></i>
+        <h1>مسلسلات اجنبية</h1>
+    </header>
+    <hr class="header-line">
+
+    <!-- أيقونة الفلتر -->
+    <i class="fas fa-filter" id="filter-icon"></i>
+
+    <!-- فلتر التصنيف باستخدام checkboxes -->
+    <div id="category-filter">
+        <label><input type="checkbox" class="category-checkbox" value="Action"> أكشن</label>
+        <label><input type="checkbox" class="category-checkbox" value="Comedy"> كوميدي</label>
+        <label><input type="checkbox" class="category-checkbox" value="Crime"> جريمة</label>
+        <label><input type="checkbox" class="category-checkbox" value="Romance"> رومانسي</label>
+        <label><input type="checkbox" class="category-checkbox" value="Fantasy"> خيال علمي</label>
+        <label><input type="checkbox" class="category-checkbox" value="Drama"> دراما</label>
+        <label><input type="checkbox" class="category-checkbox" value="Thriller"> أثارة</label>
+        <label><input type="checkbox" class="category-checkbox" value="Horror"> رعب</label>
+
+        <!-- زر Reset (سيبقى ظاهرًا دائمًا) -->
+        <button id="reset-filter">Reset</button>
+    </div>
+
+    <div class="series-container" id="series-list"></div>
+
+    <script>
+        $(document).ready(function(){
+            $.getJSON("https://raw.githubusercontent.com/FlickGate/TheAppFG/refs/heads/main/Series", function(data){
+                let allSeries = [];
+                let filteredSeries = [];
+                let categories = data.categories;
+                let batchSize = 21;
+                let currentIndex = 0;
+    
+                categories.forEach(category => {
+                    if (category.series) {
+                        category.series.forEach(series => {
+                            series.category = category.cate;
+                            allSeries.push(series);
+                        });
+                    }
+                });
+                
+                filteredSeries = [...allSeries];
+    
+                function displaySeries(seriesList, startIndex) {
+                    let endIndex = startIndex + batchSize;
+                    let seriesToShow = seriesList.slice(startIndex, endIndex);
+    
+                    seriesToShow.forEach(function(series){
+                        let seriesElement = `
+                            <div class="series" data-category="${series.category}" onclick="window.location.href='Seasons.html?title=${encodeURIComponent(series.title)}'">
+                                <div class="rating">${series.rating}</div>
+                                <img data-src="${series.image_url}" alt="${series.title}" class="lazy-load">
+                                <div class="overlay"></div>
+                                <div class="icon-overlay">
+                                    <i class="fa-brands fa-google-play google-play-icon"></i>
+                                </div>
+                                <div class="series-info">
+                                    <div class="series-title">${series.title}</div>
+                                    <div class="year">${series.release_year}</div>
+                                    <div class="SeasonsNum">${series.seasonNumbers} S</div>
+                                </div>
+                            </div>
+                        `;
+                        $('#series-list').append(seriesElement);
+                    });
+                    lazyLoadImages();
+                }
+    
+                function lazyLoadImages() {
+                    const images = document.querySelectorAll('img.lazy-load');
+                    const observer = new IntersectionObserver((entries, observer) => {
+                        entries.forEach(entry => {
+                            if (entry.isIntersecting) {
+                                const img = entry.target;
+                                img.src = img.dataset.src;
+                                img.classList.remove('lazy-load');
+                                observer.unobserve(img);
+                            }
+                        });
+                    }, {
+                        rootMargin: '0px 0px 200px 0px'
+                    });
+    
+                    images.forEach(image => observer.observe(image));
+                }
+    
+                function loadMoreSeries() {
+                    if (currentIndex < filteredSeries.length) {
+                        displaySeries(filteredSeries, currentIndex);
+                        currentIndex += batchSize;
+                    }
+                }
+    
+                $(window).on('scroll', function() {
+                    if ($(window).scrollTop() + $(window).height() >= $(document).height() - 100) {
+                        loadMoreSeries();
+                    }
+                });
+    
+                loadMoreSeries();
+    
+                window.filterSeries = function() {
+                    let selectedCategories = [];
+                    $('.category-checkbox:checked').each(function() {
+                        selectedCategories.push($(this).val());
+                    });
+                    filteredSeries = selectedCategories.length ? allSeries.filter(series => selectedCategories.includes(series.category)) : [...allSeries];
+                    $('#series-list').empty();
+                    currentIndex = 0;
+                    loadMoreSeries();
+                };
+    
+                $('.category-checkbox').on('change', function() {
+                    filterSeries();
+                });
+    
+                $('#filter-icon').on('click', function() {
+                    $('#category-filter').toggle();
+                });
+    
+                $(document).on('click', function(event) {
+                    if (!$(event.target).closest('#category-filter, #filter-icon').length) {
+                        $('#category-filter').hide();
+                    }
+                });
+    
+                $('#reset-filter').on('click', function() {
+                    $('.category-checkbox').prop('checked', false);
+                    filterSeries();
+                });
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,115 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #000000;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    height: 100vh;
+    overflow: hidden; /* منع شريط التمرير */
+}
+html, body {
+    width: 100%;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+header {
+    background-color: #000000;
+    padding: 15px;
+    margin-bottom: 0; /* إزالة المسافة السفلية */
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    position: relative;
+    height: 60px;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+}
+
+header h1 {
+    flex-grow: 1;
+    text-align: center;
+    font-family: 'Tajawal', sans-serif;
+    font-weight: 700;
+    font-size: 32px;
+    margin: 0;
+}
+
+hr {
+    border: .5px solid #444; /* تغيير لون الخط */
+    width: 100%; /* تغيير عرض الخط */
+    margin-bottom: 10px;
+}
+
+.logo {
+    height: 50px;
+    cursor: pointer;
+    margin-right: 20px; /* إبعاد اللوجو عن الحافة اليمنى */
+}
+
+#content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%; /* لضمان تغطية الصفحة */
+    margin-top: 0px; /* إزاحة المحتوى بسبب الـ header */
+}
+#episode-player {
+    width: 100%;
+    height: calc(100% - 120px); /* خصم ارتفاع الهيدر والفراغ */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+#episode-video {
+    width: 1080px; /* حد أقصى لعرض الفيديو */
+    height: 600px; /* حد أقصى لارتفاع الفيديو */
+    border: none;
+}
+#buttons-container {
+    margin-top: 20px; /* مسافة فوق الأزرار */
+    margin-bottom: 40px; /* مسافة إضافية أسفل الأزرار */
+    display: flex;
+    justify-content: center;
+    gap: 10px; /* مسافة بين الأزرار */
+}
+button {
+    background-color: #750202;
+    color: white;
+    border: none;
+    padding: 15px 30px;
+    font-size: 18px;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s;
+}
+
+button:hover {
+    background-color: #570101;
+}
+
+button:active {
+    background-color: #750202;
+    transform: scale(0.95);
+}
+
+@media screen and (max-width: 768px) {
+    #episode-video {
+        width: 100%;
+        height: 70%; /* تصغير الفيديو على الشاشات الصغيرة */
+    }
+
+    button {
+        font-size: 16px;
+        padding: 10px 20px;
+    }
+}

@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Series Seasons</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@200;300;400;500;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="AnimeSeriesSeason.css">
+</head>
+<body>
+    <header>
+        <i class="fas fa-arrow-left back-btn" onclick="window.history.back()"></i>
+        <h1 id="series-title"></h1>
+        <h2 id="season-title"></h2> <!-- إضافة عنوان الموسم -->
+        <a href="../../MainApp.html">
+            <img id="siteLogo" class="logo" src="https://raw.githubusercontent.com/FlickGate/TheAppFG/refs/heads/main/logo.png" alt="Logo">
+        </a>
+    </header>
+    <hr style="border-color: #333; margin-bottom: 20px;">
+
+    <!--Ads S-->
+    <div class="ad-container"></div>
+    <!--Ads E-->
+    
+    <div class="container" id="seasons-list"></div>
+
+    <script>
+        $(document).ready(function(){
+            // الحصول على الـ animeId من الرابط
+            const urlParams = new URLSearchParams(window.location.search);
+            const animeId = urlParams.get('animeId');
+    
+            // تحميل بيانات الـ JSON الخاصة بالأنميات
+            $.getJSON("https://raw.githubusercontent.com/FlickGate/TheAppFG/refs/heads/main/AnimeSeries", function(data){
+                let animeSeries = data.animeSeries;
+    
+                // البحث عن الأنمي الذي يتطابق مع الـ animeId
+                let selectedAnime = animeSeries.find(function(anime) {
+                    return anime.animeId === animeId;
+                });
+    
+                if (selectedAnime) {
+                    // عرض المعلومات الخاصة بالأنمي
+                    $('#series-title').text(selectedAnime.animeTitle);
+
+                    // عرض المواسم
+                    selectedAnime.seasons.forEach(function(season){
+                        let seasonElement = `
+                            <div class="season" onclick="window.location.href='AnimeSeriesEpisodes.html?seasonId=${encodeURIComponent(season.seasonId)}'">
+                                <img src="${season.imageUrl}" alt="${season.seasonTitle}">
+                                <div class="season-info">
+                                    <div class="season-title">${season.seasonTitle}</div>
+                                            <div class="season-episodes">${season.totalEpisodes} E</div>
+                                    <div class="season-description">${season.description}</div>
+                                </div>
+                            </div>`;
+                        $('#seasons-list').append(seasonElement);
+                    });
+                }
+            });
+        });
+    </script>
+        <!--Ads S-->
+        <div class="ad-container"></div>
+        <!--Ads E-->
+    <!--Ads Start-->
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            fetch("https://raw.githubusercontent.com/FlickGate/TheAppFG/refs/heads/main/Ads")
+                .then(response => response.json())
+                .then(data => {
+                    document.querySelectorAll(".ad-container").forEach(ad => {
+                        ad.innerHTML = `
+                            <div id="frame" style="width: 970px; margin: 0 auto; position: relative; text-align: right;">
+                                <iframe data-aa='${data.ad_id}' src='${data.ad_url}?size=970x90' 
+                                        style='width: 970px; height: 90px; border: 0; padding: 0; overflow: hidden; background-color: transparent; display: block; margin: 0 auto;'></iframe>
+                                <a id="preview-link" href="${data.ad_link}"
+                                   style="display: block; font-size: 12px; margin: 0; padding: 0; line-height: 1;">${data.ad_text}</a>
+                            </div>
+                        `;
+                    });
+                })
+                .catch(error => console.error("خطأ في تحميل بيانات الإعلان:", error));
+        });
+    </script>
+            <!--Ads End-->
+    
+</body>
+</html>
